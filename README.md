@@ -1,10 +1,10 @@
 # Threads 2.0 - 2018 Edition
 Expand upon Luis Duart's code to incorporate participant feedback.
 
-`Red ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) = TODO | Green = Completed | Blue = Currently working on`
-
-Green ![#c5f015](https://placehold.it/15/c5f015/000000?text=+)
-Blue ![#1589F0](https://placehold.it/15/1589F0/000000?text=+)
+`Red  = TODO | Green = Completed | Blue = In progress`
+Red ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) = TODO
+Green ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) = Completed
+Blue ![#1589F0](https://placehold.it/15/1589F0/000000?text=+) = In progress
 
 ## Deliverable 1 - December 2018
 1. ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Change username pool.
