@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+{# Make sure to load static files, jquery, and bootstrap select #}
+<html lang="en">
+    <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    {% load staticfiles %} 
+    {% load threadstag %}
+    {% load humanize %}
+    <script type='text/javascript' src='{% static "js/jquery-2.1.3.js" %}'></script>
+    <script type='text/javascript' src='{% static "js/threads.js" %}'></script>
+    <script type='text/javascript' src='{% static "js/opentip.js" %}'></script>
+    <script type='text/javascript' src='{% static "js/jquery.waypoints.js" %}'></script>
+    <script type='text/javascript' src='{% static "js/jquery.timeago.js" %}'></script>
+    <script type="text/javascript" src='{% static "js/ws4redis.js" %}'></script>
+    <link rel="stylesheet" type='text/css' href='{% static "css/jquery-ui.css" %}'>
+    <link rel="stylesheet" type='text/css' href='{% static "css/juryx-style.css" %}'>
+    <link rel="stylesheet" type='text/css' href='{% static "css/font-awesome.css" %}'>
+    <link rel="stylesheet" type='text/css' href='{% static "css/opentip.css" %}'>
+    <title>Threads</title>
+    </head>
+    <body>
+        <section role='application' class='drawer drawer-contents' aria-label='Threads | Mentions and Topics'>
+            <div class='drawer drawer-header' style='{% if notifications|length > 0 %}display:block; {% else %}display:none;{% endif %}' id='mentions'>
+                <i class='fa fa-comments-o' role='presentation'></i>  Mentions
+            </div>
+            {% for not in notifications reversed %}
+                <div class='drawer drawer-mentions' data-thread-id="{{not.thread.pk}}" data-post-id="{{not.post.pk}}" data-url='{% url "threads:remove_notification" notification_id=not.pk %}' role='button'>
+                You were mentioned in a post: <br>
+                {{ not.thread.title | safe }}
+                </div>
+            {% endfor %}
+            <div class='drawer drawer-header'>
+                <i class='fa fa-tags' role='presentation'></i> Topics
+            </div>
+            {% for topic in topics %}
+                <div role='button' class='drawer drawer-topic {% if topic == current_topic %}selected' aria-pressed='true{% endif %}' data-topic='{{topic.0}}'>
+                {{topic.0}}
+                </div>
+            {% endfor %}
+        </section>
+        <div class='drawer drawer-left'>
+            <div class='drawer drawer-button closed'>
+                <div class='button'>
+                    <i class='fa fa-home' data-url="{% url 'threads:filter_topic' topic='Current'%}" aria-label='Threads home' role='button'></i>
+                    <span class='button-badge' id='thread-button' style='display:none' data-counter="0"></span>
+                </div>
+                <div class='button'>
+                    <i class='fa fa-bars' role='button' aria-label="Toggle Expand Topics and Mentions"></i>
+                    <span class='button-badge mentions' id='mentioned-button' style='{% if notifications|length == 0 %}display:none;{% endif %}' data-counter="{{notifications|length}}">{{notifications|length}}</span>
+                </div>
+                {% if is_instructor %}
+                <i class='fa fa-gear{% if noPseudos %} jiggle' style='color: yellow;' data-ot='You have not added any pseudonym files to this course!' data-ot-tip-joint='left' data-ot-background='#000000' data-show-on='hover' data-ot-border-color='#ffffff'{% else %}'{% endif %} role='button' aria-label="Pseudonym Settings" ></i>
+                <div class="floating-holder" style="display:none;">
+                    <div class="address-field">Link to Pseudonym text file:<input type="input" id="address"></div><div class="submit-button-pseudos" data-url="{% url 'threads:add_new_pseudos' %}">Add Pseudos to Course</div><div class='reset-button-pseudos' data-url="{% url 'threads:reset_pseudos' %}">Reset to Default</div>
+                </div>
+                {% endif %}
+            </div>
+            <div class='drawer drawer-menu closed' aria-label="Topic: {{ current_topic }}">
+                {{ current_topic }}
+            </div>
+        </div>
+        <section class='new-thread-container' role='application' aria-label="Threads | Threads Container">
+            <div class='header-container'>
+                <h3 class='header'>Threads</h3>
+                {% if group %}<span class='grouper'>Group: {{group}}</span>{% endif %}
+            </div>
+            <div class='threads-list' role='list' aria-label="Threads List">
+                {% for thread in pinned_threads %}
+                    {% if not thread.hidden or is_instructor %}
+                        <div role='listitem' tabindex="0" class='thread-item pinned{% if thread.deleted and is_instructor %} admin-deleted {% elif thread.hidden and is_instructor %} admin-hidden {% endif %}' id='item-{{thread.pk}}' onclick='if(jQuery(this).hasClass("opened") && window.busy_vars && window.busy_vars["{{thread.pk}}"] == false){jQuery(".same-page-repliesList#replies-for-{{thread.pk}} + .submit-reply-inline").remove();jQuery(".same-page-repliesList#replies-for-{{thread.pk}}").remove();jQuery(this).removeClass("opened");return false;};window.loadReplies(event, "{% url "threads:get_replies" thread_id=thread.pk %}", "{% url "threads:post_reply" thread_id=thread.pk %}");'>
+                        {% if is_instructor %}
+                            <div class='admin-panel'>
+                                <div class='delete' role='button' aria-label='Delete thread' data-id='{{thread.pk}}' data-href="{% url 'threads:delete_thread' thread_id=thread.pk undo=0 %}" title='Mark thread as deleted' data-ot="Mark thread as deleted" data-ot-tip-joint="left" data-ot-background="#000000" data-ot-border-color="#ffffff"><i class='fa fa-remove'></i></div>
+                                <div class='hide' role='button' aria-label='hide thread' data-id='{{thread.pk}}' data-href="{% url 'threads:hide_thread' thread_id=thread.pk undo=0 %}" title='Hide entire thread' data-ot="Hide entire thread" data-ot-tip-joint="left" data-ot-background="#000000" data-ot-border-color="#ffffff"><i class='fa fa-eye-slash'></i></div>
+                                <div class='move' role='button' aria-label="Change thread's topic" data-id='{{thread.pk}}' onclick="if (!event) {event = window.event;} if (event.stopPropagation) { event.stopPropagation();} else {event.cancelBubble = true;}jQuery('.popup-background').show(); jQuery('.addthreadtotopic').attr('action', '{% url 'threads:new_topic' thread_id=thread.pk %}');return false;" title="Change thread's topic" data-ot="Change thread's topic" data-ot-tip-joint="left" data-ot-background="#000000" data-ot-border-color="#ffffff"><i class='fa fa-tag'></i></div>
+                            </div>
+                            <h4 class='thread-title {% if thread.deleted %} admin-deleted {% elif thread.hidden %} admin-hidden {% endif %}'  data-reply-url="{% url 'threads:post_reply' thread_id=thread.pk %}">
+                                    {{thread.title | safe}}
+                                </h4>
+                        {% else %}
+                            {% if thread.deleted %}
+                                <h4 class='thread-title' onclick='window.loadReplies(this, "{% url "threads:get_replies" thread_id=thread.pk %}", "{% url "threads:post_reply" thread_id=thread.pk %}");' data-reply-url="{% url 'threads:post_reply' thread_id=thread.pk %}">[DELETED] by staff</h4>
+                            {% else %}
+                                <h4 class='thread-title' onclick='window.loadReplies(this, "{% url "threads:get_replies" thread_id=thread.pk %}", "{% url "threads:post_reply" thread_id=thread.pk %}");' data-reply-url="{% url 'threads:post_reply' thread_id=thread.pk %}">
+                                    {{thread.title | safe}}
+                                </h4>
+                            {% endif %}
+                        {% endif %}
+                        <div class='replies-count' role='button' aria-label='Click to view {{thread|replyNum}} replies' onclick="if (jQuery('#item-{{thread.pk}}').hasClass('opened')) { jQuery(this).attr('aria-pressed', 'false')} else { jQuery(this).attr('aria-pressed', 'true')}; jQuery('#item-{{thread.pk}}').trigger('click');" aria-pressed='false'>{{thread|replyNum}}</div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                <span class='add-threads-after' style='display:none;'></span>
+                {% for thread in threads %}
+                    {% if not thread.hidden or is_instructor %}
+                        <div role='listitem' tabindex="0" class='thread-item {% if thread.deleted and is_instructor %} admin-deleted {% elif thread.hidden and is_instructor %} admin-hidden {% endif %}' id='item-{{thread.pk}}' onclick='if(jQuery(this).hasClass("opened") && window.busy_vars && window.busy_vars["{{thread.pk}}"] == false){jQuery(".same-page-repliesList#replies-for-{{thread.pk}} + .submit-reply-inline").remove();jQuery(".same-page-repliesList#replies-for-{{thread.pk}}").remove();jQuery(this).removeClass("opened");return false;};window.loadReplies(event, "{% url "threads:get_replies" thread_id=thread.pk %}", "{% url "threads:post_reply" thread_id=thread.pk %}");'>
+                        {% if is_instructor %}
+                            <div class='admin-panel'>
+                                <div class='delete' role='button' aria-label='Delete thread' data-id='{{thread.pk}}' data-href="{% url 'threads:delete_thread' thread_id=thread.pk undo=0 %}" title='Mark thread as deleted' data-ot="Mark thread as deleted" data-ot-tip-joint="left" data-ot-background="#000000" data-ot-border-color="#ffffff"><i class='fa fa-remove'></i></div>
+                                <div class='hide' role='button' aria-label='hide thread' data-id='{{thread.pk}}' data-href="{% url 'threads:hide_thread' thread_id=thread.pk undo=0 %}" title='Hide entire thread' data-ot="Hide entire thread" data-ot-tip-joint="left" data-ot-background="#000000" data-ot-border-color="#ffffff"><i class='fa fa-eye-slash'></i></div>
+                                <div class='move' role='button' aria-label="Change thread's topic" data-id='{{thread.pk}}' onclick="if (!event) {event = window.event;} if (event.stopPropagation) { event.stopPropagation();} else {event.cancelBubble = true;}jQuery('.popup-background').show(); jQuery('.addthreadtotopic').attr('action', '{% url 'threads:new_topic' thread_id=thread.pk %}');return false;" title="Change thread's topic" data-ot="Change thread's topic" data-ot-tip-joint="left" data-ot-background="#000000" data-ot-border-color="#ffffff"><i class='fa fa-tag'></i></div>
+                            </div>
+                            <h4 class='thread-title {% if thread.deleted %} admin-deleted {% elif thread.hidden %} admin-hidden {% endif %}'  data-reply-url="{% url 'threads:post_reply' thread_id=thread.pk %}">
+                                    {{thread.title | safe}}
+                                </h4>
+                        {% else %}
+                            {% if thread.deleted %}
+                                <h4 class='thread-title' onclick='window.loadReplies(this, "{% url "threads:get_replies" thread_id=thread.pk %}", "{% url "threads:post_reply" thread_id=thread.pk %}");' data-reply-url="{% url 'threads:post_reply' thread_id=thread.pk %}">[DELETED] by staff</h4>
+                            {% else %}
+                                <h4 class='thread-title' onclick='window.loadReplies(this, "{% url "threads:get_replies" thread_id=thread.pk %}", "{% url "threads:post_reply" thread_id=thread.pk %}");' data-reply-url="{% url 'threads:post_reply' thread_id=thread.pk %}">
+                                    {{thread.title | safe}}
+                                </h4>
+                            {% endif %}
+                        {% endif %}
+                        <div class='replies-count' role='button' aria-label='Click to view {{thread|replyNum}} replies' onclick="if (jQuery('#item-{{thread.pk}}').hasClass('opened')) { jQuery(this).attr('aria-pressed', 'false')} else { jQuery(this).attr('aria-pressed', 'true')}; jQuery('#item-{{thread.pk}}').trigger('click');" aria-pressed='false'>{{thread|replyNum}}</div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <section class='new-thread' role='application' aria-label="Threads | Create New Thread">
+                <div class='new-thread-button' tabindex="0" role='presentation'>
+                    Create New Thread
+                </div>
+                <div class="new-thread-container2" data-posting="{% url 'threads:post_thread' %}" method="POST" id='threadform' style='margin-bottom: -200px'>
+                    {% csrf_token %}
+                    <textarea name='title' rows="5" cols= "40" style="font-weight: bold;" aria-label="Textfield to create a new thread" tabindex="0"></textarea>
+                    <div type='submit' class='submit-thread-button' role='button' tabindex="0">Submit New Thread</div>
+                    <div class='never-mind-button' role='button' tabindex="0">Cancel</div>
+                </div>
+            </section>
+        </section>
+        <div class='new-replies-container' style='display:none'>
+            <div class='header-container'>
+                <span class='header'></span>
+                {% if group %}<span class='grouper'>Group: {{group}}</span>{% endif %}
+            </div>
+            <div class='repliesList'></div>
+            <div class="new-reply-container2" action="" method="POST">
+                <textarea name='reply' id="reply" rows="2" cols= "40" style="font-weight: bold;"></textarea>
+                <div type='submit' class='input-reply submit-reply-button' value="Submit New Reply" tabindex="0">Submit New Reply</div>
+            </div>
+        </div>
+        <div class='popup-background'>
+            <div class='popup-container'>
+                <p>Add thread to following topic:</p>
+                <div class='addthreadtotopic' action="" method=POST>
+                {% csrf_token %}
+                <div class='topic-container'>
+                {% for topic in topics %}
+                    <input type='radio' name='topic' value="{{topic.0}}">{{topic.0}}</input><br>
+                {% endfor %}
+                    <input type='radio' name='topic' value='new-topic-title'>New Topic:</input>
+                    <input type='text' name='new-topic-title' value="">
+                    </div>
+                    <div type='submit' class='input-topic' value="Change Topic">Change Topic</div>
+                    <div type='submit' class='input-cancel' value='Cancel'>Cancel</div>
+                </div>
+            </div>
+        </div>
+        <div class='small-popup'>
+        </div>
+        {% if is_instructor %}
+        <script>
+            window.admin_panel = "<div class='admin-panel'><div class='delete' role='button' aria-label='Delete thread' data-id='[[thread_id]]' data-href='/threads/thread/[[thread_id]]/delete/' title='Mark thread as deleted' data-ot='Mark thread as deleted' data-ot-tip-joint='left' data-ot-background='#000000' data-ot-border-color='#ffffff'><i class='fa fa-remove'></i></div><div class='hide' role='button' aria-label='Hide thread' data-id='[[thread_id]]' data-href='/threads/thread/[[thread_id]]/hide/' title='Hide entire thread' data-ot='Hide entire thread' data-ot-tip-joint='left' data-ot-background='#000000' data-ot-border-color='#ffffff'><i class='fa fa-eye-slash'></i></div><div class='move' role='button' aria-label='Change topic for thread' data-id='[[thread_id]]' onclick='if (!event) {event = window.event;} if (event.stopPropagation) { event.stopPropagation();} else {event.cancelBubble = true;}jQuery(\".popup-background\").show(); jQuery(\".addthreadtotopic\").attr(\"action\", \"/threads/thread/[[thread_id]]/new_topic/\");return false;' title='Change thread's topic' data-ot='Change thread\'s topic' data-ot-tip-joint='left' data-ot-background='#000000' data-ot-border-color='#ffffff'><i class='fa fa-tag'></i></div></div>";
+            window.reply_admin_panel = '<div class="reply-admin"><div class="delete-reply" role="button" aria-label="Delete reply" data-id="[[post_id]]" data-href="/threads/post/[[post_id]]/delete/" data-ot="Mark reply as deleted" data-ot-tip-joint="bottom" data-ot-background="#000000" data-ot-border-color="#ffffff"><i class="fa fa-remove"></i></div><div class="hide-reply" data-id="[[post_id]]" data-href="/threads/post/[[post_id]]/hide/" data="role" aria-label="Hide reply" data-ot="Hide reply" data-ot-tip-joint="bottom" data-ot-background="#000000" data-ot-border-color="#ffffff"><i class="fa fa-eye-slash"></i></div></div>';
+        </script>
+        <div class='pseudo-ui' style="display: none;">
+            <h3>Available Pseudonyms</h3>
+            <div class="list_of_pseudos">     
+            </div>
+            <div role='button' class='reset-pseudos-button' data-url='{% url "threads:reset_pseudos" %}'>Reset Pseduonyms to Default</div>
+        </div>
+    {% endif %}
+
+    <script>
+    window.csrf_token_backup = "{{csrf_token}}";
+    </script>
+    <span class='mentioned-id' style="display:none;">{{mentioned_id}}</span>
+    <script>
+    var receiveMessage = function (evt) {
+      if (evt.data === 'MM:3PCunsupported') {
+        console.log('third party cookies are not supported');
+        var overlaybckg = document.createElement('div');
+        var overlaydialog = document.createElement('div');
+        jQuery(overlaybckg).css({
+            "background-color": "rgba(33, 33, 33, 0.3)",
+            "width": "100%",
+            "height": "100%",
+            "position": "fixed",
+            "top": "0",
+            "left": "0",
+            "z-index": "999"
+        });
+        jQuery(overlaydialog).css({
+            "background-color": "white",
+            "width": "500px",
+            "height": "400px",
+            "margin-left": "-250px",
+            "margin-top": "-200px",
+            "top": "50%",
+            "left": "50%",
+            "position": "fixed",
+            "z-index": "9999",
+            "border": "4px solid black",
+            "border-radius": "10px",
+        });
+        jQuery(overlaydialog).html("<h3 style='padding-left: 50px; padding-top:30px;'>Uh oh!</h3><p style='padding: 0px 50px;'>You seem to have third-party cookies and data turned off. Unfortunately, this means that the tool will not work as intended. Figure out how to turn this option on by visiting the troubleshooting page below.</p> <button role='button' class='btn btn-success' style='margin:5px 50px;width:400px;' id='takemethere' onclick='window.open(\"/troubleshooting/\", \"_blank\");'>Visit troubleshooting page</button><button role='button' class='btn btn-danger' style='margin: 10px 50px;width:400px;' id='ignorewarning'>Proceed</button> <p style='padding: 10px 50px; text-align:center;'>(Clicking \"Proceed\" will allow you to view the list of threads but will not allow you to view replies or make your own threads.)</p>");
+        jQuery(overlaybckg).append(overlaydialog);
+        jQuery("body").append(overlaybckg);
+        jQuery('#ignorewarning').click(function(){
+            jQuery(overlaybckg).remove();
+        })
+      } else if (evt.data === 'MM:3PCsupported') {
+        console.log('third party cookies are supported');
+      }
+    };
+    window.addEventListener("message", receiveMessage, false);
+    </script>
+    <iframe src="/static/start.html" style="display:none" />
+    </body>
+</html>
