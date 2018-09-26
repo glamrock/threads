@@ -1,3 +1,5 @@
+**Clone of Luis Duart's code which can be found [here](https://github.com/lduarte1991/Threads){:target="_blank"}**
+
 # Threads
 LTI tool made by HarvardX to provide a pseudonymous forum-like experience. 
 
