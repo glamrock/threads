@@ -1,13 +1,15 @@
+**Clone of Luis Duart's code which can be found [here](https://github.com/lduarte1991/Threads)**
+
 # Threads
-LTI tool made by HarvardX to provide a pseudonymous forum-like experience. 
+LTI tool made by HarvardX to provide a pseudonymous forum-like experience.
 
 ## Goals and Deliverables
 
-The first iteration of the threads tool was built by Tyler Vigen for Professor 
+The first iteration of the threads tool was built by Tyler Vigen for Professor
 Charles Nesson's Jury course. It was built using PHP and Javascript with a
 MySQL backend. As outlined in Vigen's paper "Threads -- A Deliberation", its
-main purpose was to provide a forum-like environment in which a level of 
-pseudonymity could be attained. 
+main purpose was to provide a forum-like environment in which a level of
+pseudonymity could be attained.
 
 The course involves learners having to comment and discuss controversial topics
 without fear of having opinions outside the "norm" or what may be deemed
@@ -51,9 +53,9 @@ Here are the current deliverables for the tool to outline an MVP:
 6. A live-update mechanism which either (a) allows a user to automatically
    receive responses as another learner posts it or (b) be notified
    that there was a new thread or response via numbered badges (a la apps)
-       
+
     7. Allow users to be able to be notified when somebody mentions them via
        an @ tag.
-       
-    8. Have a mechanism to customize what tags are available on a 
-       course-by-course basis. 
+
+    8. Have a mechanism to customize what tags are available on a
+       course-by-course basis.
