@@ -2,6 +2,7 @@
 Expand upon Luis Duart's code to incorporate participant feedback.
 
 `Red  = TODO | Green = Completed | Blue = In progress`
+
 Red ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) = TODO
 Green ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) = Completed
 Blue ![#1589F0](https://placehold.it/15/1589F0/000000?text=+) = In progress
