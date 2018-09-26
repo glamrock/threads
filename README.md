@@ -1,5 +1,19 @@
+# Threads 2.0 - 2018 Edition
+Expand upon Luis Duart's code to incorporate participant feedback.
+
+`Red ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) = TODO | Green = Completed | Blue = Currently working on`
+
+Green ![#c5f015](https://placehold.it/15/c5f015/000000?text=+)
+Blue ![#1589F0](https://placehold.it/15/1589F0/000000?text=+)
+
+## Deliverable 1 - December 2018
+1. ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Change username pool.
+2. ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Prevent auto-scroll whenever a new comment is added to a thread.
+3. ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Expand the screen space of threads (if possible - might be a restriction of it being embedded in the EdX ecosystem)
+
 **Clone of Luis Duart's code which can be found [here](https://github.com/lduarte1991/Threads)**
 
+---
 # Threads
 LTI tool made by HarvardX to provide a pseudonymous forum-like experience.
 
