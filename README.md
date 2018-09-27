@@ -11,6 +11,7 @@ Blue ![#1589F0](https://placehold.it/15/1589F0/000000?text=+) = In progress
 1. ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Change username pool.
 2. ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Prevent auto-scroll whenever a new comment is added to a thread.
 3. ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Expand the screen space of threads (if possible - might be a restriction of it being embedded in the EdX ecosystem)
+4. ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Lit Review!
 
 **Clone of Luis Duart's code which can be found [here](https://github.com/lduarte1991/Threads)**
 
